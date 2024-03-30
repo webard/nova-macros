@@ -1,0 +1,48 @@
+{
+    "name": "webard/nova-macros",
+    "description": "Couple useful macros for Laravel Nova",
+    "keywords": [
+        "webard",
+        "laravel-nova-macros"
+    ],
+    "homepage": "https://github.com/webard/nova-macros",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Webard",
+            "email": "code@webard.me",
+            "role": "Developer"
+        }
+    ],
+    "repositories": {
+        "nova": {
+            "type": "composer",
+            "url": "https://nova.laravel.com"
+        }
+    },
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0",
+        "laravel/nova": "^4.33"
+    },
+    "autoload": {
+        "psr-4": {
+            "Webard\\NovaMacros\\": "src"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Webard\\NovaMacros\\NovaMacrosServiceProvider"
+            ]
+        }
+    }
+}
