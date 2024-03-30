@@ -7,9 +7,9 @@ use Laravel\Nova\Fields\Field;
 use Laravel\Nova\Actions\Action;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\Eloquent\Builder;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Http\Requests\ActionRequest;
-use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class NovaMacrosServiceProvider extends ServiceProvider
 {
