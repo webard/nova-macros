@@ -3,13 +3,17 @@
 namespace Webard\NovaMacros;
 
 use Closure;
-use Laravel\Nova\Fields\Field;
-use Laravel\Nova\Actions\Action;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Database\Eloquent\Builder;
-use Laravel\Nova\Http\Requests\NovaRequest;
+use Illuminate\Support\Str;
+use InvalidArgumentException;
+use Laravel\Nova\Actions\Action;
+use Laravel\Nova\Fields\Field;
 use Laravel\Nova\Http\Requests\ActionRequest;
+use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Nova;
+use Laravel\Nova\Resource;
 
 class NovaMacrosServiceProvider extends ServiceProvider
 {
@@ -18,6 +22,77 @@ class NovaMacrosServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if (! Field::hasMacro('apply')) {
+            // https://github.com/nova-kit/nova-field-mixins
+            Field::macro('apply', function ($mixin, ...$parameters) {
+                /** @var Field $this */
+                /** @var class-string|callable $mixin */
+                if (\is_string($mixin) && class_exists($mixin)) {
+                    $mixin = app($mixin);
+                }
+
+                if (! \is_callable($mixin)) {
+                    throw new InvalidArgumentException('Unable to mixin non-callable $mixin');
+                }
+
+                $mixin($this, ...$parameters);
+
+                return $this;
+            });
+        }
+
+        if (! Field::hasMacro('capitalizeFirst')) {
+            Field::macro('capitalizeFirst', function () {
+                /** @var Field $this */
+                return $this->displayUsing(fn ($value) => Str::ucfirst($value));
+            });
+        }
+
+        if (! Field::hasMacro('helpError')) {
+            Field::macro('helpError', function ($message) {
+                /** @var Field $this */
+                return $this->help("<span class='text-base text-red-500'>{$message}</span>");
+            });
+        }
+
+        if (! Field::hasMacro('helpWarning')) {
+            Field::macro('helpWarning', function ($message) {
+                /** @var Field $this */
+                return $this->help("<span class='text-base text-yellow-600'>{$message}</span>");
+            });
+        }
+
+        if (! Field::hasMacro('helpInfo')) {
+            Field::macro('helpInfo', function ($message) {
+                /** @var Field $this */
+                return $this->help("<span class='text-base text-primary-500'>{$message}</span>");
+            });
+        }
+
+        if (! Field::hasMacro('canEditWhen')) {
+            /**
+             * @param  class-string<resource>|resource  $resource
+             */
+            Field::macro('canEditWhen', function ($ability, string|Resource $resource) {
+                /** @var Field $this */
+                // @phpstan-ignore-next-line find a way to fix this
+                $classBasename = (string) \class_basename($resource::$model);
+                $permission = $ability.\ucfirst($classBasename);
+
+                return $this->readonly(fn ($request) => ! Nova::user($request)?->can($permission, $resource) ?: false);
+            });
+        }
+
+        if (! Field::hasMacro('canViewWhen')) {
+            Field::macro('canViewWhen', function ($ability, string $resource) {
+                /** @var Field $this */
+                $classBasename = (string) \class_basename($resource::$model);
+                $permission = $ability.\ucfirst($classBasename);
+
+                return $this->canSeeWhen($permission, $resource);
+            });
+        }
+
         if (! Field::hasMacro('havingable')) {
             /**
              * Used to filter by number fields that have generated data by aggregator methods like withSum, withCount etc.

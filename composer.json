@@ -44,5 +44,8 @@
                 "Webard\\NovaMacros\\NovaMacrosServiceProvider"
             ]
         }
+    },
+    "require-dev": {
+        "laravel/pint": "^1.15"
     }
 }
