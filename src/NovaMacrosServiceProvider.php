@@ -44,7 +44,7 @@ class NovaMacrosServiceProvider extends ServiceProvider
         if (! Field::hasMacro('capitalizeFirst')) {
             Field::macro('capitalizeFirst', function () {
                 /** @var Field $this */
-                return $this->displayUsing(fn ($value) => Str::ucfirst($value));
+                return $this->displayUsing(fn($value) => Str::ucfirst($value));
             });
         }
 
@@ -77,9 +77,9 @@ class NovaMacrosServiceProvider extends ServiceProvider
                 /** @var Field $this */
                 // @phpstan-ignore-next-line find a way to fix this
                 $classBasename = (string) \class_basename($resource::$model);
-                $permission = $ability.\ucfirst($classBasename);
+                $permission = $ability . \ucfirst($classBasename);
 
-                return $this->readonly(fn ($request) => ! Nova::user($request)?->can($permission, $resource) ?: false);
+                return $this->readonly(fn($request) => ! Nova::user($request)?->can($permission, $resource) ?: false);
             });
         }
 
@@ -87,27 +87,10 @@ class NovaMacrosServiceProvider extends ServiceProvider
             Field::macro('canViewWhen', function ($ability, string $resource) {
                 /** @var Field $this */
                 $classBasename = (string) \class_basename($resource::$model);
-                $permission = $ability.\ucfirst($classBasename);
+                $permission = $ability . \ucfirst($classBasename);
 
                 return $this->canSeeWhen($permission, $resource);
             });
-        }
-
-        if (! Field::hasMacro('havingable')) {
-            /**
-             * Used to filter by number fields that have generated data by aggregator methods like withSum, withCount etc.
-             * ! Currently works only with numeric data.
-             */
-            Field::macro(
-                'havingable',
-                function () {
-                    /**
-                     * @var Field $this
-                     */
-                    // @phpstan-ignore-next-line
-                    return $this->filterable(fn ($request, $query, $value, $attribute) => $query->havingNovaFilterNumber($attribute, $value));
-                }
-            );
         }
 
         if (! Action::hasMacro('canSeeWithModel')) {
@@ -143,9 +126,9 @@ class NovaMacrosServiceProvider extends ServiceProvider
                      * @var Action $this
                      */
                     return $this->canSeeWithModel(
-                        fn (NovaRequest $request, Model $model) => $request->user()->can($ability, $model)
+                        fn(NovaRequest $request, Model $model) => $request->user()->can($ability, $model)
                     )->canRun(
-                        fn (NovaRequest $request, Model $model) => $request->user()->can($ability, $model)
+                        fn(NovaRequest $request, Model $model) => $request->user()->can($ability, $model)
                     );
                 }
             );
@@ -160,10 +143,10 @@ class NovaMacrosServiceProvider extends ServiceProvider
                      */
                     return $this
                         ->canSeeWithModel(
-                            fn (NovaRequest $request, $model) => $callback($request, $model)
+                            fn(NovaRequest $request, $model) => $callback($request, $model)
                         )
                         ->canRun(
-                            fn (NovaRequest $request, $model) => $callback($request, $model)
+                            fn(NovaRequest $request, $model) => $callback($request, $model)
                         );
                 }
             );
@@ -180,40 +163,18 @@ class NovaMacrosServiceProvider extends ServiceProvider
                         function (NovaRequest $request) use ($callback) {
                             if ($request->isCreateOrAttachRequest()) {
                                 return $callback instanceof Closure
-                                        ? call_user_func($callback, $request)
-                                        : $callback;
+                                    ? call_user_func($callback, $request)
+                                    : $callback;
                             }
                         }
                     );
                 }
             );
         }
-
-        // ? Useful for filtering Number fields that have generated data by aggregator methods like withSum, withCount etc.
-        Builder::macro(
-            'havingNovaFilterNumber',
-            function (string $column, ?array $value) {
-                /**
-                 * @var EloquentBuilder $this
-                 */
-                if ($value === null || ($value[0] === null && $value[1] === null)) {
-                    return $this;
-                }
-                if ($value[1] === null) {
-                    $this->having($column, '>=', $value[0]);
-                } elseif ($value[0] === null) {
-                    $this->having($column, '<=', $value[1]);
-                } else {
-                    $this->havingBetween($column, $value);
-                }
-            }
-        );
     }
 
     /**
      * Register the application services.
      */
-    public function register()
-    {
-    }
+    public function register() {}
 }
